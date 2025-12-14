@@ -11,115 +11,16 @@ import {
   Flex,
   Tooltip,
   useDisclosure,
+
 } from '@chakra-ui/react';
 import { LockIcon, UnlockIcon, WarningIcon } from '@chakra-ui/icons';
 import ModalRelatorioQuarentena from '../../components/ModalQuarentena';
 import TabelaHeader from '../../components/TabelaHeader';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getProducts } from '../../mockdata/data';
+import { useQuery } from '@tanstack/react-query';
 
-const data = [
 
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400562',
-    descricao: 'CREME DE LEITE BETA ZERO LACTOSE 200G',
-    diasQuarentena: '3/10',
-    volume: '5001478',
-    estoque: '5265.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400088',
-    descricao: 'BEB LAC UHT CHOCOLATE BETANIA KIDS 200ML',
-    diasQuarentena: '3',
-    volume: '5001478',
-    estoque: '3915.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400034',
-    descricao: 'QUEIJO MUSSARELA BETA 4KG',
-    diasQuarentena: '6',
-    volume: '5001478',
-    estoque: '3396.1700',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400038',
-    descricao: 'CREME DE LEITE BETA 200G',
-    diasQuarentena: '3',
-    volume: '5001478',
-    estoque: '47385.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '401614',
-    descricao: 'BEB LAC UHT CHOCOLATE BETANIA KIDS 200ML',
-    diasQuarentena: '10',
-    volume: '5001478',
-    estoque: '1145.2100',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400090',
-    descricao: 'COALHADA LIGHT BETA 140G',
-    diasQuarentena: '7',
-    volume: '5001478',
-    estoque: '21312.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400082',
-    descricao: 'IOG NATURAL INT BETA COPO 170G',
-    diasQuarentena: '10',
-    volume: '5001478',
-    estoque: '27000.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400157',
-    descricao: 'REQUEIJAO CREMOSO BETA 200G',
-    diasQuarentena: '2',
-    volume: '5001478',
-    estoque: '22097.0000',
-    status: 'desbloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400157',
-    descricao: 'REQUEIJAO CREMOSO BETA 200G',
-    diasQuarentena: '2',
-    volume: '5001478',
-    estoque: '9816.0000',
-    status: 'bloqueado',
-  },
-  {
-    op: '1436835',
-    dataGeracao: '14/11/2025',
-    codigo: '400077',
-    descricao: 'MISTURA REQUEIJAO GORD VEG E AMIDO 1,8KG',
-    diasQuarentena: '2',
-    volume: '5001478',
-    estoque: '1004.0000',
-    status: 'desbloqueado',
-  },
-];
 
 const StatusIcon = ({ status }: any) => {
   const isBlocked = status === 'bloqueado';
@@ -147,24 +48,32 @@ const InfoIcon = ({ onOpen }: any) => (
 );
 
 const TabelaQuarentena = () => {
-  const [filteredValues, setFilteredValues] = useState(data)
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts
+  });
+  const [filteredValues, setFilteredValues] = useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  useEffect(() => {
+    setFilteredValues(data);
+  }, [data]);
 
-  // const handleSearch = (searchQuery: string) => {
-  //   const query = searchQuery.toLowerCase();
-  //   const filtered = data.filter((item) =>
-  //     Object.values(item)
-  //       .map((value) => value.toString().toLowerCase()) 
-  //       .some((value) => value.includes(query)) 
-  //   );
-  //   setFilteredValues(filtered);
-  // };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  const handleSearch = (filteredValues)=>{
-    setFilteredValues(filteredValues)
+  if (isError) {
+    return <div>Error loading data</div>;
   }
 
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const handleSearch = (filteredValues) => {
+    setFilteredValues(filteredValues);
+  };
+
+
+
   return (
     <>
       <TabelaHeader data={data} onSearch={handleSearch} />
@@ -195,7 +104,7 @@ const TabelaQuarentena = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {filteredValues.map((item, index) => (
+            {filteredValues && filteredValues.map((item, index) => (
               <Tr key={index} _hover={{ bg: 'gray.50' }}>
                 <Td textAlign="center" fontSize="12px" color="gray.600">{item.op}</Td>
                 <Td textAlign="center" fontSize="12px">{item.dataGeracao}</Td>
