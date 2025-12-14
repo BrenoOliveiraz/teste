@@ -10,10 +10,13 @@ import {
   Box,
   Flex,
   Tooltip,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { LockIcon, UnlockIcon, WarningIcon } from '@chakra-ui/icons';
+import ModalRelatorioQuarentena from '../../components/ModalQuarentena';
+import TabelaHeader from '../../components/TabelaHeader';
+import { useState } from 'react';
 
-// 1. Dados de Exemplo (Simulando a sua tabela)
 const data = [
 
   {
@@ -118,9 +121,6 @@ const data = [
   },
 ];
 
-// 2. Componentes de Renderização de Status e Info
-
-// Componente que renderiza o ícone de Status (cadeado)
 const StatusIcon = ({ status }: any) => {
   const isBlocked = status === 'bloqueado';
   const color = isBlocked ? 'red.500' : 'green.500';
@@ -133,73 +133,98 @@ const StatusIcon = ({ status }: any) => {
   );
 };
 
-// Componente que renderiza o ícone de Informação (laranja)
-const InfoIcon = () => (
+const InfoIcon = ({ onOpen }: any) => (
+
   <Tooltip label="Informações Adicionais" placement="top">
-    <WarningIcon w={5} h={5} color="orange.400" cursor="pointer" />
+    <WarningIcon
+      w={5}
+      h={5}
+      color="orange.400"
+      cursor="pointer"
+      onClick={onOpen}
+    />
   </Tooltip>
 );
 
-
-// 3. Componente Principal da Tabela
 const TabelaQuarentena = () => {
-  return (
-    <TableContainer
-      bg="white"
-      border='1px solid #117BAA'
-      borderRadius="lg" // Arredonda as bordas do container da tabela
-      p={4}
-      boxShadow="md"
-      maxW="100%"
-      overflow="auto"
-      textAlign="center"
+  const [filteredValues, setFilteredValues] = useState(data)
 
-    >
-      <Table
+  // const handleSearch = (searchQuery: string) => {
+  //   const query = searchQuery.toLowerCase();
+  //   const filtered = data.filter((item) =>
+  //     Object.values(item)
+  //       .map((value) => value.toString().toLowerCase()) 
+  //       .some((value) => value.includes(query)) 
+  //   );
+  //   setFilteredValues(filtered);
+  // };
+
+  const handleSearch = (filteredValues)=>{
+    setFilteredValues(filteredValues)
+  }
+
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  return (
+    <>
+      <TabelaHeader data={data} onSearch={handleSearch} />
+      <TableContainer
+        bg="white"
+        border='1px solid #117BAA'
+        borderRadius="lg"
+        p={4}
+        boxShadow="md"
+        maxW="100%"
         overflow="hidden"
-        borderRadius="10px" // Arredonda as bordas da tabela
-        variant="striped"
-        size="sm"
-       textAlign="center"
+
       >
-        <Thead  textAlign="center" bg="#0F4F6D" fontWeight='900'>
-          <Tr textAlign="center" color='white' fontSize='14px' >
-            {["OP", "Data Geração", "Código", "Descrição", "Dias Quarentena", "Volume", "Estoque", "Status", "Inf"].map((header, index) => (
-              <Th textAlign="center" color='white' key={index} textTransform="none">
-                {header}
-              </Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {data.map((item, index) => (
-            <Tr  key={index} _hover={{ bg: 'gray.50' }}>
-              <Td  textAlign="center" fontSize="12px" color="gray.600">{item.op}</Td>
-              <Td textAlign="center" fontSize="12px">{item.dataGeracao}</Td>
-              <Td textAlign="center" fontSize="12px">{item.codigo}</Td>
-              <Td textAlign="center" fontSize="12px" maxW="250px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                <Tooltip label={item.descricao} placement="top-start">
-                  {item.descricao}
-                </Tooltip>
-              </Td>
-              <Td textAlign="center" fontSize="12px" color="blue.500" fontWeight="bold">
-                {item.diasQuarentena}
-              </Td>
-              <Td textAlign="center" fontSize="12px">{item.volume}</Td>
-              <Td textAlign="center"  fontSize="sm" fontWeight="medium">
-                {item.estoque}
-              </Td>
-              <Td  textAlign="center">
-                <StatusIcon status={item.status} />
-              </Td>
-              <Td textAlign="center">
-                <InfoIcon />
-              </Td>
+        <Table
+          overflow="hidden"
+          borderRadius="10px"
+          variant="striped"
+          size="sm"
+          textAlign="center"
+        >
+          <Thead textAlign="center" bg="#0F4F6D" fontWeight='900'>
+            <Tr textAlign="center" color='white' fontSize='14px' >
+              {["OP", "Data Geração", "Código", "Descrição", "Dias Quarentena", "Volume", "Estoque", "Status", "Inf"].map((header, index) => (
+                <Th textAlign="center" color='white' key={index} textTransform="none">
+                  {header}
+                </Th>
+              ))}
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
-    </TableContainer>
+          </Thead>
+          <Tbody>
+            {filteredValues.map((item, index) => (
+              <Tr key={index} _hover={{ bg: 'gray.50' }}>
+                <Td textAlign="center" fontSize="12px" color="gray.600">{item.op}</Td>
+                <Td textAlign="center" fontSize="12px">{item.dataGeracao}</Td>
+                <Td textAlign="center" fontSize="12px">{item.codigo}</Td>
+                <Td textAlign="center" fontSize="12px" maxW="250px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  <Tooltip label={item.descricao} placement="top-start">
+                    {item.descricao}
+                  </Tooltip>
+                </Td>
+                <Td textAlign="center" fontSize="12px" color="gray.600" fontWeight="bold">
+                  {item.diasQuarentena}
+                </Td>
+                <Td textAlign="center" fontSize="12px">{item.volume}</Td>
+                <Td textAlign="center" fontSize="sm" fontWeight="medium">
+                  {item.estoque}
+                </Td>
+                <Td textAlign="center">
+                  <StatusIcon status={item.status} />
+                </Td>
+                <Td textAlign="center">
+                  <InfoIcon onOpen={onOpen} />
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+      <ModalRelatorioQuarentena isOpen={isOpen} onClose={onClose} />
+    </>
 
   );
 };
