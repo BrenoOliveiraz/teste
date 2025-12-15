@@ -19,17 +19,25 @@ import TabelaHeader from '../../components/TabelaHeader';
 import { useEffect, useState } from 'react';
 import { getProducts } from '../../mockdata/data';
 import { useQuery } from '@tanstack/react-query';
+import { Modal, ModalOverlay, ModalContent } from '@chakra-ui/react';
+import SuccessBlockAlert from '../../components/AvisoBloqueio'
 
 
 
-const StatusIcon = ({ status }: any) => {
+const StatusIcon = ({ status, onClick }: any) => {
   const isBlocked = status === 'bloqueado';
   const color = isBlocked ? 'red.500' : 'green.500';
   const IconComponent = isBlocked ? LockIcon : UnlockIcon;
-
+  const label = isBlocked ? 'Bloqueado. Clique para Desbloquear' : 'Desbloqueado. Clique para Bloquear';
   return (
-    <Tooltip label={isBlocked ? 'Bloqueado' : 'Desbloqueado'} placement="top">
-      <IconComponent w={5} h={5} color={color} />
+    <Tooltip label={label} placement="top">
+      <IconComponent
+        w={5}
+        h={5}
+        color={color}
+        cursor="pointer" // Adiciona cursor pointer para indicar que é clicável
+        onClick={onClick} // 'onClick' é indefinido
+      />
     </Tooltip>
   );
 };
@@ -54,7 +62,8 @@ const TabelaQuarentena = () => {
   });
   const [filteredValues, setFilteredValues] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+  const { isOpen: isAlertOpen, onOpen: onAlertOpen, onClose: onAlertClose } = useDisclosure();
+
   useEffect(() => {
     setFilteredValues(data);
   }, [data]);
@@ -72,6 +81,15 @@ const TabelaQuarentena = () => {
     setFilteredValues(filteredValues);
   };
 
+  const handleStatusChange = (item) => {
+    // **AQUI: Sua lógica de bloqueio/desbloqueio real deve ir aqui.**
+    // Exemplo: fazer uma chamada API para alterar o status do item.
+    console.log(`Tentando alterar status do item: ${item.codigo}. Status atual: ${item.status}`);
+
+    // Após a lógica de sucesso (ex: API retornou 200), abra o alerta de sucesso.
+    // O alerta da imagem diz 'Bloqueio gerado com sucesso!!', então o usaremos para indicar sucesso na operação.
+    onAlertOpen();
+  };
 
 
   return (
@@ -122,7 +140,10 @@ const TabelaQuarentena = () => {
                   {item.estoque}
                 </Td>
                 <Td textAlign="center">
-                  <StatusIcon status={item.status} />
+                  <StatusIcon
+                    status={item.status}
+                    onClick={() => handleStatusChange(item)}
+                  />
                 </Td>
                 <Td textAlign="center">
                   <InfoIcon onOpen={onOpen} />
@@ -133,6 +154,18 @@ const TabelaQuarentena = () => {
         </Table>
       </TableContainer>
       <ModalRelatorioQuarentena isOpen={isOpen} onClose={onClose} />
+
+      <Modal isOpen={isAlertOpen} onClose={onAlertClose} isCentered>
+        <ModalOverlay />
+        <ModalContent
+          bg="transparent"
+          boxShadow="none"
+          maxW="sm" // Define a largura máxima para o alerta
+        >
+          {/* O componente de Alerta customizado é inserido aqui */}
+          <SuccessBlockAlert onClose={onAlertClose} />
+        </ModalContent>
+      </Modal>
     </>
 
   );

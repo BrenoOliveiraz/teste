@@ -107,7 +107,7 @@ export async function getProducts() {
 }
 
 
-interface CreateProductRequest {
+export interface CreateProductRequest {
     op: string;
     dataGeracao: string
     codigo: string
